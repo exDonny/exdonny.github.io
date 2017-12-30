@@ -1,0 +1,50 @@
+<hr>
+<p>title: Spring AOP</p>
+<p>date: 2017-11-22 21:23:43</p>
+<p>tags: spring</p>
+<p>categories: spring</p>
+<hr>
+<h2 id="什么是-AOP"><a href="#什么是-AOP" class="headerlink" title="什么是 AOP"></a>什么是 AOP</h2><p>AOP是面向切面编程，也就是说面向某个功能模块编程，典型的应用就是Spring的声明式事务，<br>Spring的AOP事务解析；至于概念，我上知乎度了一下，解释得蛮清楚的，这里就直接贴个链接。<br>(链接：<a href="https://www.zhihu.com/question/24863332/answer/48376158">https://www.zhihu.com/question/24863332/answer/48376158</a>)<br>在以前的事务管理是要融合在逻辑代码中的，在逻辑代码中决定事务是否提交或者回滚，这样很<br>容易造成代码难以维护，代码冗余但是使用spring的声明式事务后，只需要在数据库处理方法上<br>注解事务，就可以对操作进行管理，事务的设置和逻辑代码分开，容易维护。<br>至于有什么作用，自然就是降低代码的耦合度。</p>
+<h2 id="如何使用-Spring-AOP"><a href="#如何使用-Spring-AOP" class="headerlink" title="如何使用 Spring AOP"></a>如何使用 Spring AOP</h2><p> 可以通过配置文件或者编程的方式来使用Spring AOP</p>
+<p> 配置时通过xml文件来进行，方式有很多种，我用<aop:config>来配置</p>
+<pre><code class="java"> &lt;?xml version=<span class="string">"1.0"</span> encoding=<span class="string">"UTF-8"</span>?&gt;
+&lt;beans xmlns=<span class="string">"http://www.springframework.org/schema/beans"</span>
+    xmlns:xsi=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span> xmlns:util=<span class="string">"http://www.springframework.org/schema/util"</span>
+    xmlns:p=<span class="string">"http://www.springframework.org/schema/p"</span> xmlns:aop=<span class="string">"http://www.springframework.org/schema/aop"</span>
+    xmlns:tx=<span class="string">"http://www.springframework.org/schema/tx"</span> xmlns:context=<span class="string">"http://www.springframework.org/schema/context"</span>
+    xsi:schemaLocation=<span class="string">"</span>
+<span class="string">    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd</span>
+<span class="string">    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd</span>
+<span class="string">    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd</span>
+<span class="string">    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd</span>
+<span class="string">    http://www.springframework.org/schema/context </span>
+<span class="string">    http://www.springframework.org/schema/context/spring-context-2.5.xsd"</span>&gt;
+&lt;!--   换头子   --&gt;
+    &lt;bean id="DepDAO" class="com.dao.DepDAO"&gt;&lt;/bean&gt;
+&lt;!-- 手动添加 service  bean --&gt;
+    &lt;bean id=<span class="string">"DepService"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"com.service.DepService"</span>&gt;
+        &lt;property name="depDAO" ref="DepDAO"&gt;&lt;/property&gt;
+    &lt;/bean&gt;
+    &lt;!--   添加自己写的事务类 --&gt;
+    &lt;bean id="MyTransaction" class="com.transaction.MyTransaction"&gt;&lt;/bean&gt;
+
+    &lt;!-- 织入 :将次要业务织入主要业务--&gt;
+    &lt;aop:config&gt;
+    &lt;!-- ref 与上面的id要保持一致 --&gt;
+        &lt;aop:aspect ref=<span class="string">"MyTransaction"</span>&gt;&lt;!-- ref 填要织入的东西 --&gt;
+        &lt;!-- before  在  pointcut 之前执行begin方法  即为真实状态下的开启事务 --&gt;
+            &lt;aop:before method=<span class="string">"begin"</span> pointcut=<span class="string">"execution(* com.service.*.*(..))"</span>/&gt;
+        &lt;/aop:aspect&gt;
+    &lt;/aop:config&gt;
+
+    &lt;aop:config&gt;
+    &lt;!-- after  在  pointcut 之前执行commit方法  即为真实状态下的提交事务 --&gt;
+        &lt;aop:aspect ref=<span class="string">"MyTransaction"</span>&gt;
+            &lt;aop:after method=<span class="string">"commit"</span> pointcut=<span class="string">"execution(* com.service.*.*(..))"</span>/&gt;
+        &lt;/aop:aspect&gt;
+    &lt;/aop:config&gt;
+
+&lt;/beans&gt;
+</code></pre>
+ <!-- more -->
+<p>解释” <em> com.service.</em>.*(..) “ ：<br>任意返回类型 com.service包下的所有类的所有方法的所有参数<br>即，程序会自动给 com.service 包下的所有类提供事务,正常使用Spring做项目是就不需要手动开启和提交事务，<br>如果业务比较多的话会减少不少代码。</p>
