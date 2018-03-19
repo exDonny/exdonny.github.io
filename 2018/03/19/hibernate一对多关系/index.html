@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="hibernate一对多关系" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="原理：&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;一对多关系在数据库中是通过主外键的形式来实现 &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;一对多关系在类中有两种实现方式：&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;（1）单向关系（效率高）&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;n">
+<meta name="keywords" content="hibernate一对多关系">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hibernate一对多关系">
+<meta property="og:url" content="http://www.rxdonny.com/2018/03/19/hibernate一对多关系/index.html">
+<meta property="og:site_name" content="TangRenxin&#39;s Blog">
+<meta property="og:description" content="原理：&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;一对多关系在数据库中是通过主外键的形式来实现 &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;一对多关系在类中有两种实现方式：&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;（1）单向关系（效率高）&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;n">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-03-19T06:48:58.307Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="hibernate一对多关系">
+<meta name="twitter:description" content="原理：&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;一对多关系在数据库中是通过主外键的形式来实现 &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;一对多关系在类中有两种实现方式：&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;（1）单向关系（效率高）&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;n">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.3',
+    sidebar: {"position":"right","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.rxdonny.com/2018/03/19/hibernate一对多关系/"/>
+
+
+
+
+
+  <title>hibernate一对多关系 | TangRenxin's Blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?1ee1c0acf41d19ba0c99a6f5dab13e35";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TangRenxin's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">命运永远掌握在自己的手中 | | 要相信你永远是最幸运的那一个</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.rxdonny.com/2018/03/19/hibernate一对多关系/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="认金">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TangRenxin's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">hibernate一对多关系</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-19T10:39:24+08:00">
+                2018-03-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/SSH/" itemprop="url" rel="index">
+                    <span itemprop="name">SSH</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/03/19/hibernate一对多关系/" class="leancloud_visitors" data-flag-title="hibernate一对多关系">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="原理："><a href="#原理：" class="headerlink" title="原理："></a>原理：</h2><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;一对多关系在数据库中是通过主外键的形式来实现</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;一对多关系在类中有两种实现方式：<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（1）单向关系（效率高）<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    该关系由“多”的一方来维护；就是在“多”的一方的pojo中添加“一”的一方的对象<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（2）双向关系（效率低）<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;    该关系由“一”的一方来维护；就是在“一”的一方的pojo中添加“多”的一方的对象集合</p>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>数据库创建两张表：部门表dep(depid,depname),员工表emp(empid,empname,did),建立主外键关系depid-did,新建工程并配置，创建Dep，Emp类。</p>
+<h3 id="1-单向关系——该关系由“多”的一方来维护（emp）"><a href="#1-单向关系——该关系由“多”的一方来维护（emp）" class="headerlink" title="1.单向关系——该关系由“多”的一方来维护（emp）"></a>1.单向关系——该关系由“多”的一方来维护（emp）</h3><p> （1） 在“多”的一方的pojo中添加“一”的一方的对象，在pojo.Emp类中添加如下变量<br> <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">package</span> com.pojo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Emp</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">int</span> empid;</span><br><span class="line">	<span class="keyword">private</span> String empname;</span><br><span class="line">	<span class="keyword">private</span> Dep dep ;<span class="comment">// 添加dep的对象   指的是在哪个部门</span></span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">public</span> Dep <span class="title">getDep</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> dep;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setDep</span><span class="params">(Dep dep)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.dep = dep;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getEmpid</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> empid;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setEmpid</span><span class="params">(<span class="keyword">int</span> empid)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.empid = empid;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> String <span class="title">getEmpname</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> empname;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setEmpname</span><span class="params">(String empname)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.empname = empname;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p> （2） 在pojo.Emp的配置文件Emp.hbm.xml进行如下配置</p>
+ <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"> &lt;?xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span>?&gt;</span><br><span class="line">&lt;!DOCTYPE hibernate-mapping PUBLIC <span class="string">"-//Hibernate/Hibernate Mapping DTD 3.0//EN"</span></span><br><span class="line"><span class="string">"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd"</span>&gt;</span><br><span class="line"></span><br><span class="line">&lt;!-- 配置的是表和类的关系 --&gt;</span><br><span class="line">&lt;hibernate-mapping&gt;</span><br><span class="line">	&lt;<span class="class"><span class="keyword">class</span> <span class="title">name</span></span>=<span class="string">"com.pojo.Emp"</span> table=<span class="string">"emp"</span>&gt;</span><br><span class="line">		&lt;id name=<span class="string">"empid"</span> column=<span class="string">"empid"</span>&gt;</span><br><span class="line">			&lt;generator class="assigned"&gt;&lt;/generator&gt;</span><br><span class="line">		&lt;/id&gt;</span><br><span class="line">		&lt;property name="empname" column="empname"&gt;&lt;/property&gt;</span><br><span class="line">		</span><br><span class="line">		&lt;!-- 一对多在“多”的一方实现的配置部分 --&gt;</span><br><span class="line">		&lt;many-to-one name="dep" column="did" class="com.pojo.Dep" cascade="all"&gt;&lt;/many-to-one&gt;</span><br><span class="line">		</span><br><span class="line">	&lt;/class&gt;</span><br><span class="line">	</span><br><span class="line">&lt;/hibernate-mapping&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="测试：创建Test测试类"><a href="#测试：创建Test测试类" class="headerlink" title="测试：创建Test测试类"></a>测试：创建Test测试类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.test;</span><br><span class="line"><span class="keyword">import</span> org.hibernate.Session;</span><br><span class="line"><span class="keyword">import</span> org.hibernate.SessionFactory;</span><br><span class="line"><span class="keyword">import</span> org.hibernate.Transaction;</span><br><span class="line"><span class="keyword">import</span> org.hibernate.cfg.Configuration;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.pojo.Emp;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test3</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">		Configuration configuration = <span class="keyword">new</span> Configuration().configure();</span><br><span class="line">		SessionFactory factory = configuration.buildSessionFactory();</span><br><span class="line">		Session session = factory.openSession();</span><br><span class="line">		Transaction transaction = session.beginTransaction();</span><br><span class="line">		<span class="comment">//查询某个员工并得到所在的部门</span></span><br><span class="line">		Emp emp = (Emp) session.get(Emp.class, <span class="number">1</span>);</span><br><span class="line">		System.out.println(emp.getEmpid() + <span class="string">"\t"</span> + emp.getEmpname() + <span class="string">"\t"</span>+ emp.getDep().getDepname());</span><br><span class="line">		transaction.commit();</span><br><span class="line">		session.close();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="2-单向关系——该关系由“一”的一方来维护（dep）"><a href="#2-单向关系——该关系由“一”的一方来维护（dep）" class="headerlink" title="2.单向关系——该关系由“一”的一方来维护（dep）"></a>2.单向关系——该关系由“一”的一方来维护（dep）</h3><p> （1） 在“一”的一方的pojo中添加“多”的一方的对象集合，在pojo.Dep类中添加如下变量<br> <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">package</span> com.pojo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.HashSet;</span><br><span class="line"><span class="keyword">import</span> java.util.Set;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Dep</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">int</span> depid;</span><br><span class="line">	<span class="keyword">private</span> String depname;</span><br><span class="line">	<span class="comment">//  添加emp的对象集合  指在该部门下有哪些员工</span></span><br><span class="line">	<span class="keyword">private</span> Set&lt;Emp&gt; emps = <span class="keyword">new</span> HashSet&lt;Emp&gt;(<span class="number">0</span>);</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">public</span> Set&lt;Emp&gt; <span class="title">getEmps</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> emps;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setEmps</span><span class="params">(Set&lt;Emp&gt; emps)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.emps = emps;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getDepid</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> depid;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setDepid</span><span class="params">(<span class="keyword">int</span> depid)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.depid = depid;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> String <span class="title">getDepname</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> depname;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setDepname</span><span class="params">(String depname)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.depname = depname;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p> （2） 在pojo.Dep的配置文件Dep.hbm.xml进行如下配置</p>
+ <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=<span class="string">"1.0"</span> encoding=<span class="string">"utf-8"</span>?&gt;</span><br><span class="line">&lt;!DOCTYPE hibernate-mapping PUBLIC <span class="string">"-//Hibernate/Hibernate Mapping DTD 3.0//EN"</span></span><br><span class="line"><span class="string">"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd"</span>&gt;</span><br><span class="line"></span><br><span class="line">&lt;!-- 配置的是表和类的关系 --&gt;</span><br><span class="line">&lt;hibernate-mapping&gt;</span><br><span class="line">	&lt;<span class="class"><span class="keyword">class</span> <span class="title">name</span></span>=<span class="string">"com.pojo.Dep"</span> table=<span class="string">"dep"</span>&gt;</span><br><span class="line">		&lt;id name=<span class="string">"depid"</span> column=<span class="string">"depid"</span>&gt;</span><br><span class="line">			&lt;generator class="assigned"&gt;&lt;/generator&gt;</span><br><span class="line">		&lt;/id&gt;</span><br><span class="line">		&lt;property name="depname" column="depname"&gt;&lt;/property&gt;</span><br><span class="line">		</span><br><span class="line">		&lt;!-- 部门有哪些员工  order-by：排序方式  cascade：级联--&gt;</span><br><span class="line">		&lt;set name=<span class="string">"emps"</span> order-by=<span class="string">"empid asc"</span> cascade=<span class="string">"save-update"</span>&gt;</span><br><span class="line">			&lt;key column="did"&gt;&lt;/key&gt;</span><br><span class="line">			&lt;one-to-many <span class="class"><span class="keyword">class</span></span>=<span class="string">"com.pojo.Emp"</span>/&gt;</span><br><span class="line">		&lt;/set&gt;</span><br><span class="line">		</span><br><span class="line">		</span><br><span class="line">	&lt;/class&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&lt;/hibernate-mapping&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="测试：创建Test测试类-1"><a href="#测试：创建Test测试类-1" class="headerlink" title="测试：创建Test测试类"></a>测试：创建Test测试类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Set;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.hibernate.Session;</span><br><span class="line"><span class="keyword">import</span> org.hibernate.SessionFactory;</span><br><span class="line"><span class="keyword">import</span> org.hibernate.Transaction;</span><br><span class="line"><span class="keyword">import</span> org.hibernate.cfg.Configuration;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.pojo.Dep;</span><br><span class="line"><span class="keyword">import</span> com.pojo.Emp;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test3</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">		</span><br><span class="line">		Configuration configuration = <span class="keyword">new</span> Configuration().configure();</span><br><span class="line">		</span><br><span class="line">		SessionFactory factory = configuration.buildSessionFactory();</span><br><span class="line">		</span><br><span class="line">		Session session = factory.openSession();</span><br><span class="line">		</span><br><span class="line">		Transaction transaction = session.beginTransaction();</span><br><span class="line">		Dep dep = (Dep) session.get(Dep.class, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">		Set&lt;Emp&gt; emps = dep.getEmps();</span><br><span class="line">		System.out.println(<span class="string">"显示该部门的所有员工："</span>);</span><br><span class="line">		<span class="keyword">for</span> (Emp emp2 : emps) &#123;</span><br><span class="line">		System.out.println(emp2.getEmpid()+<span class="string">"\t"</span>+emp2.getEmpname()+<span class="string">"\t"</span>+emp2.getDep().getDepname());</span><br><span class="line">			</span><br><span class="line">		&#125;</span><br><span class="line">		transaction.commit();</span><br><span class="line">		session.close();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="引申"><a href="#引申" class="headerlink" title="引申"></a>引申</h2><h4 id="cascade属性"><a href="#cascade属性" class="headerlink" title="cascade属性"></a>cascade属性</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 在处理一对一、一对多、多对多的关系时，有时会涉及到级联的操作，上面例子中也有体现，即属性cascade：翻译为串联的意思，表示级联操作。级联的意思是：本实体做了什么事，也要拉上另一个关联的实体，导致另一个实体跟着做事情。就是说我删除了，你也得删除！ 关联目标，指的是关联的那个实体。具体的解释可以百度，很详细。</p>
+<p>cascade属性的可能值有<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; all: 所有情况下均进行关联操作，即save-update和delete。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; none: 所有情况下均不进行关联操作。这是默认值。 </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; save-update: 在执行save/update/saveOrUpdate时进行关联操作。 </p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; delete: 在执行delete 时进行关联操作。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; all-delete-orphan:当一个节点在对象图中成为孤儿节点时，删除该节点。比如在一个一对多的关系中，Student包含多个book，当在对象关系中删除一个book时，此book即成为孤儿节点。</p>
+<h4 id="lazy（懒加载）属性"><a href="#lazy（懒加载）属性" class="headerlink" title="lazy（懒加载）属性"></a>lazy（懒加载）属性</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 懒加载又称延迟加载，它保证了应用只有在需要时才去数据库中抓取相应的记录。通过延迟加载技术可以避免过多、过早地加载数据表里的数据，从而降低应用的内存开销。Hibernate 的延迟加载本质上就是代理模式的应用，当程序通过 Hibernate 装载一个实体时，默认情况下，Hibernate 并不会立即抓取它的集合属性、关联实体所以对应的记录，而是通过生成一个代理来表示这些集合属性、关联实体，这就是代理模式应用带来的优势。但是，延迟加载也是项目开发中特别常见的一个错误。如果对一个类或者集合配置了延迟检索策略，那么必须当代理类实例或代理集合处于持久化状态（即处于Session范围内）时，才能初始化它。如果在游离状态时才初始化它，就会产生延迟初始化错误。所以，在开发独立的DAO数据访问层时应该格外小心这个问题。</p>
+<p>如果在获取对象的时候使用的是session.get()是不会延迟加载的，只有在使用load、hql时候才会延迟加载。</p>
+<h4 id="session的两种方法-get-load"><a href="#session的两种方法-get-load" class="headerlink" title="session的两种方法  get/load"></a>session的两种方法  get/load</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; get和load关系的比较<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.get是立即加载，不管要不要用这个对象都立马查询；load是懒加载，需要用的时候加载。<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.get找不到对象时会返回null；load找不到对象会报错。<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3.get返回的是pojo对象；load返回的是代理对象。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>一直在努力，谢谢您的打赏</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/weixin-pay.png" alt="认金 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/ali-pay.jpg" alt="认金 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/hibernate/" rel="tag"># hibernate</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/19/手动配置hibernate及简单使用规范/" rel="next" title="手动配置hibernate及简单使用规范">
+                <i class="fa fa-chevron-left"></i> 手动配置hibernate及简单使用规范
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/19/hibernate多对多关系/" rel="prev" title="hibernate多对多关系">
+                hibernate多对多关系 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="uyan_frame"></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">认金</p>
+              <p class="site-description motion-element" itemprop="description">谨慎和勤奋才能抓住机遇</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">31</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/yourname" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:yourname@gmail.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/yourname" target="_blank" title="Google">
+                    
+                      <i class="fa fa-fw fa-google"></i>Google</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/yourname" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.sivan0222.cn" title="吴晓文" target="_blank">吴晓文</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bestry.top" title="刘霈" target="_blank">刘霈</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.lanyuanxiaoyao.com" title="张家城" target="_blank">张家城</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#原理："><span class="nav-number">1.</span> <span class="nav-text">原理：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#准备工作"><span class="nav-number">2.</span> <span class="nav-text">准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-单向关系——该关系由“多”的一方来维护（emp）"><span class="nav-number">2.1.</span> <span class="nav-text">1.单向关系——该关系由“多”的一方来维护（emp）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试：创建Test测试类"><span class="nav-number">2.2.</span> <span class="nav-text">测试：创建Test测试类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-单向关系——该关系由“一”的一方来维护（dep）"><span class="nav-number">2.3.</span> <span class="nav-text">2.单向关系——该关系由“一”的一方来维护（dep）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试：创建Test测试类-1"><span class="nav-number">2.4.</span> <span class="nav-text">测试：创建Test测试类</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#引申"><span class="nav-number">3.</span> <span class="nav-text">引申</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#cascade属性"><span class="nav-number">3.0.1.</span> <span class="nav-text">cascade属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#lazy（懒加载）属性"><span class="nav-number">3.0.2.</span> <span class="nav-text">lazy（懒加载）属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#session的两种方法-get-load"><span class="nav-number">3.0.3.</span> <span class="nav-text">session的两种方法  get/load</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+<div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">认金</span>
+  <br />
+  <span id="busuanzi_container_site_pv">
+    总访问量<span id="busuanzi_value_site_pv"></span>次
+	</span>
+	 <span class="post-meta-divider">|</span>
+	<span id="busuanzi_container_site_uv">
+  访客数<span id="busuanzi_value_site_uv"></span>人次
+</span>
+  
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+	
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/three/three.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/three/three-waves.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+    
+
+    
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2148448"></script>
+      <!-- UY END -->
+    
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+<script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("TILp6sh3sXv7ALPC69L1Ez0f-gzGzoHsz", "ffWk7tYInN3oC9752v1EFNqT");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
