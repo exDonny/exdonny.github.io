@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="redis数据类型-List" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一、概述：&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;在Redis中，List类型是按照插入顺序排序的字符串链表。和数据结构中的普通链表一样，我们可以在其头部(left)和尾部(right)添加新的元素。在插入时，如果该键并不存在，Redis将为该键创建一个新的链表。与此相反，如果链表中所有的元素均被移除，那么该键也将会被从数据库中删除。List中可以包含的">
+<meta name="keywords" content="redis数据类型-List">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis数据类型-List">
+<meta property="og:url" content="http://www.rxdonny.com/2018/04/12/redis--List类型/index.html">
+<meta property="og:site_name" content="TangRenxin&#39;s Blog">
+<meta property="og:description" content="一、概述：&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;在Redis中，List类型是按照插入顺序排序的字符串链表。和数据结构中的普通链表一样，我们可以在其头部(left)和尾部(right)添加新的元素。在插入时，如果该键并不存在，Redis将为该键创建一个新的链表。与此相反，如果链表中所有的元素均被移除，那么该键也将会被从数据库中删除。List中可以包含的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-04-13T09:18:42.846Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="redis数据类型-List">
+<meta name="twitter:description" content="一、概述：&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;在Redis中，List类型是按照插入顺序排序的字符串链表。和数据结构中的普通链表一样，我们可以在其头部(left)和尾部(right)添加新的元素。在插入时，如果该键并不存在，Redis将为该键创建一个新的链表。与此相反，如果链表中所有的元素均被移除，那么该键也将会被从数据库中删除。List中可以包含的">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.3',
+    sidebar: {"position":"right","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.rxdonny.com/2018/04/12/redis--List类型/"/>
+
+
+
+
+
+  <title>redis数据类型-List | TangRenxin's Blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?1ee1c0acf41d19ba0c99a6f5dab13e35";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TangRenxin's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">命运永远掌握在自己的手中 | | 要相信你永远是最幸运的那一个</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.rxdonny.com/2018/04/12/redis--List类型/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="认金">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TangRenxin's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">redis数据类型-List</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-12T13:19:24+08:00">
+                2018-04-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/redis笔记/" itemprop="url" rel="index">
+                    <span itemprop="name">redis笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/04/12/redis--List类型/" class="leancloud_visitors" data-flag-title="redis数据类型-List">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、概述："><a href="#一、概述：" class="headerlink" title="一、概述："></a>一、概述：</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在Redis中，List类型是按照插入顺序排序的字符串链表。和数据结构中的普通链表一样，我们可以在其头部(left)和尾部(right)添加新的元素。在插入时，如果该键并不存在，Redis将为该键创建一个新的链表。与此相反，如果链表中所有的元素均被移除，那么该键也将会被从数据库中删除。List中可以包含的最大元素数量是4294967295。<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;从元素插入和删除的效率视角来看，如果我们是在链表的两头插入或删除元素，这将会是非常高效的操作，即使链表中已经存储了百万条记录，该操作也可以在常量时间内完成。然而需要说明的是，如果元素插入或删除操作是作用于链表中间，那将会是非常低效的。</p>
+<h3 id="二、相关命令（O表示时间复杂度）"><a href="#二、相关命令（O表示时间复杂度）" class="headerlink" title="二、相关命令（O表示时间复杂度）"></a>二、相关命令（O表示时间复杂度）</h3><h5 id="1、LPUSH-key-value-value-…-O-1"><a href="#1、LPUSH-key-value-value-…-O-1" class="headerlink" title="1、LPUSH key value [value …]     O(1)"></a>1、LPUSH key value [value …]     O(1)</h5><p>在指定Key所关联的List  Value的头部插入参数中给出的所有Values。如果该Key不存在，该命令将在插入之前创建一个与该Key关联的空链表，之后再将数据从链表的头部插入。如果该键的Value不是链表类型，该命令将返回相关的错误信息。     插入后链表中元素的数量。</p>
+<h5 id="2、LPUSHX-key-value-O-1"><a href="#2、LPUSHX-key-value-O-1" class="headerlink" title="2、LPUSHX key value     O(1)"></a>2、LPUSHX key value     O(1)</h5><p>仅有当参数中指定的Key存在时，该命令才会在其所关联的List Value的头部插入参数中给出的Value，否则将不会有任何操作发生。    插入后链表中元素的数量。 </p>
+<h5 id="3、LRANGE-key-start-stop-O-S-N"><a href="#3、LRANGE-key-start-stop-O-S-N" class="headerlink" title="3、LRANGE key start stop     O(S+N)"></a>3、LRANGE key start stop     O(S+N)</h5><p>时间复杂度中的S为start参数表示的偏移量，N表示元素的数量。该命令的参数start和end都是0-based。即0表示链表头部(leftmost)的第一个元素。其中start的值也可以为负值，-1将表示链表中的最后一个元素，即尾部元素，-2表示倒数第二个并以此类推。该命令在获取元素时，start和end位置上的元素也会被取出。如果start的值大于链表中元素的数量，空链表将会被返回。如果end的值大于元素的数量，该命令则获取从start(包括start)开始，链表中剩余的所有元素。    返回指定范围内元素的列表。</p>
+<h5 id="4、LPOP-key-O-1"><a href="#4、LPOP-key-O-1" class="headerlink" title="4、LPOP key     O(1)"></a>4、LPOP key     O(1)</h5><p>返回并弹出指定Key关联的链表中的第一个元素，即头部元素，。如果该Key不存，返回nil。    链表头部的元素。</p>
+<h5 id="5、LLEN-key-O-1"><a href="#5、LLEN-key-O-1" class="headerlink" title="5、LLEN key    O(1)"></a>5、LLEN key    O(1)</h5><p>返回指定Key关联的链表中元素的数量，如果该Key不存在，则返回0。如果与该Key关联的Value的类型不是链表，则返回相关的错误信息。    链表中元素的数量。</p>
+<h5 id="6、LREM-key-count-value-O-N"><a href="#6、LREM-key-count-value-O-N" class="headerlink" title="6、LREM key count value     O(N)"></a>6、LREM key count value     O(N)</h5><p>时间复杂度中N表示链表中元素的数量。在指定Key关联的链表中，删除前count个值等于value的元素。如果count大于0，从头向尾遍历并删除，如果count小于0，则从尾向头遍历并删除。如果count等于0，则删除链表中所有等于value的元素。如果指定的Key不存在，则直接返回0。    返回被删除的元素数量。</p>
+<h5 id="7、LSET-key-index-value-O-N"><a href="#7、LSET-key-index-value-O-N" class="headerlink" title="7、LSET key index value     O(N)"></a>7、LSET key index value     O(N)</h5><p>时间复杂度中N表示链表中元素的数量。但是设定头部或尾部的元素时，其时间复杂度为O(1)。设定链表中指定位置的值为新值，其中0表示第一个元素，即头部元素，-1表示尾部元素。如果索引值Index超出了链表中元素的数量范围，该命令将返回相关的错误信息。     </p>
+<h5 id="8、LINDEX-key-index-O-N"><a href="#8、LINDEX-key-index-O-N" class="headerlink" title="8、LINDEX key index     O(N)"></a>8、LINDEX key index     O(N)</h5><p>时间复杂度中N表示在找到该元素时需要遍历的元素数量。对于头部或尾部元素，其时间复杂度为O(1)。该命令将返回链表中指定位置(index)的元素，index是0-based，表示头部元素，如果index为-1，表示尾部元素。如果与该Key关联的不是链表，该命令将返回相关的错误信息。    返回请求的元素，如果index超出范围，则返回nil。</p>
+<h5 id="9、LTRIM-key-start-stop-O-N"><a href="#9、LTRIM-key-start-stop-O-N" class="headerlink" title="9、LTRIM key start stop     O(N)"></a>9、LTRIM key start stop     O(N)</h5><p>N表示被删除的元素数量。该命令将仅保留指定范围内的元素，从而保证链接中的元素数量相对恒定。start和stop参数都是0-based，0表示头部元素。和其他命令一样，start和stop也可以为负值，-1表示尾部元素。如果start大于链表的尾部，或start大于stop，该命令不错报错，而是返回一个空的链表，与此同时该Key也将被删除。如果stop大于元素的数量，则保留从start开始剩余的所有元素。     </p>
+<h5 id="10、LINSERT-key-BEFORE-AFTER-pivot-value-O-N"><a href="#10、LINSERT-key-BEFORE-AFTER-pivot-value-O-N" class="headerlink" title="10、LINSERT key BEFORE|AFTER pivot value     O(N)"></a>10、LINSERT key BEFORE|AFTER pivot value     O(N)</h5><p>时间复杂度中N表示在找到该元素pivot之前需要遍历的元素数量。这样意味着如果pivot位于链表的头部或尾部时，该命令的时间复杂度为O(1)。该命令的功能是在pivot元素的前面或后面插入参数中的元素value。如果Key不存在，该命令将不执行任何操作。如果与Key关联的Value类型不是链表，相关的错误信息将被返回。    成功插入后链表中元素的数量，如果没有找到pivot，返回-1，如果key不存在，返回0。</p>
+<h5 id="11、RPUSH-key-value-value-…-O-1"><a href="#11、RPUSH-key-value-value-…-O-1" class="headerlink" title="11、RPUSH key value [value …]     O(1)"></a>11、RPUSH key value [value …]     O(1)</h5><p>在指定Key所关联的List Value的尾部插入参数中给出的所有Values。如果该Key不存在，该命令将在插入之前创建一个与该Key关联的空链表，之后再将数据从链表的尾部插入。如果该键的Value不是链表类型，该命令将返回相关的错误信息。     插入后链表中元素的数量。 </p>
+<h5 id="12、RPUSHX-key-value-O-1"><a href="#12、RPUSHX-key-value-O-1" class="headerlink" title="12、RPUSHX key value     O(1)"></a>12、RPUSHX key value     O(1)</h5><p>仅有当参数中指定的Key存在时，该命令才会在其所关联的List Value的尾部插入参数中给出的Value，否则将不会有任何操作发生。     插入后链表中元素的数量。 </p>
+<h5 id="13、RPOP-key-O-1"><a href="#13、RPOP-key-O-1" class="headerlink" title="13、RPOP key     O(1)"></a>13、RPOP key     O(1)</h5><p>返回并弹出指定Key关联的链表中的最后一个元素，即尾部元素，。如果该Key不存，返回nil。     链表尾部的元素。 </p>
+<h5 id="14、RPOPLPUSH-source-destination-O-1"><a href="#14、RPOPLPUSH-source-destination-O-1" class="headerlink" title="14、RPOPLPUSH source destination     O(1)"></a>14、RPOPLPUSH source destination     O(1)</h5><p>原子性的从与source键关联的链表尾部弹出一个元素，同时再将弹出的元素插入到与destination键关联的链表的头部。如果source键不存在，该命令将返回nil，同时不再做任何其它的操作了。如果source和destination是同一个键，则相当于原子性的将其关联链表中的尾部元素移到该链表的头部。    返回弹出和插入的元素。</p>
+<h3 id="三、命令示例："><a href="#三、命令示例：" class="headerlink" title="三、命令示例："></a>三、命令示例：</h3><h5 id="1-LPUSH-LPUSHX-LRANGE"><a href="#1-LPUSH-LPUSHX-LRANGE" class="headerlink" title="1. LPUSH/LPUSHX/LRANGE:"></a>1. LPUSH/LPUSHX/LRANGE:</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">/&gt; redis-cli    #在Shell提示符下启动redis客户端工具。</span><br><span class="line"> redis 127.0.0.1:6379&gt; del mykey</span><br><span class="line"> (integer) 1</span><br><span class="line"> #mykey键并不存在，该命令会创建该键及与其关联的List，之后在将参数中的values从左到右依次插入。</span><br><span class="line"> redis 127.0.0.1:6379&gt; lpush mykey a b c d</span><br><span class="line"> (integer) 4</span><br><span class="line"> #取从位置0开始到位置2结束的3个元素。</span><br><span class="line"> redis 127.0.0.1:6379&gt; lrange mykey 0 2</span><br><span class="line"> 1) &quot;d&quot;</span><br><span class="line"> 2) &quot;c&quot;</span><br><span class="line"> 3) &quot;b&quot;</span><br><span class="line"> #取链表中的全部元素，其中0表示第一个元素，-1表示最后一个元素。</span><br><span class="line"> redis 127.0.0.1:6379&gt; lrange mykey 0 -1</span><br><span class="line"> 1) &quot;d&quot;</span><br><span class="line"> 2) &quot;c&quot;</span><br><span class="line"> 3) &quot;b&quot;</span><br><span class="line"> 4) &quot;a&quot;</span><br><span class="line"> #mykey2键此时并不存在，因此该命令将不会进行任何操作，其返回值为0。</span><br><span class="line"> redis 127.0.0.1:6379&gt; lpushx mykey2 e</span><br><span class="line"> (integer) 0</span><br><span class="line"> #可以看到mykey2没有关联任何List Value。</span><br><span class="line"> redis 127.0.0.1:6379&gt; lrange mykey2 0 -1</span><br><span class="line"> (empty list or set)</span><br><span class="line"> #mykey键此时已经存在，所以该命令插入成功，并返回链表中当前元素的数量。</span><br><span class="line"> redis 127.0.0.1:6379&gt; lpushx mykey e</span><br><span class="line"> (integer) 5</span><br><span class="line"> #获取该键的List Value的头部元素。</span><br><span class="line"> redis 127.0.0.1:6379&gt; lrange mykey 0 0</span><br><span class="line"> 1) &quot;e&quot;</span><br></pre></td></tr></table></figure>
+<h5 id="2-LPOP-LLEN"><a href="#2-LPOP-LLEN" class="headerlink" title="2. LPOP/LLEN:"></a>2. LPOP/LLEN:</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"> redis 127.0.0.1:6379&gt; lpush mykey a b c d</span><br><span class="line">(integer) 4</span><br><span class="line">redis 127.0.0.1:6379&gt; lpop mykey</span><br><span class="line">&quot;d&quot;</span><br><span class="line">redis 127.0.0.1:6379&gt; lpop mykey</span><br><span class="line">&quot;c&quot;</span><br><span class="line">#在执行lpop命令两次后，链表头部的两个元素已经被弹出，此时链表中元素的数量是2</span><br><span class="line">redis 127.0.0.1:6379&gt; llen mykey</span><br><span class="line">(integer) 2</span><br></pre></td></tr></table></figure>
+<h5 id="3-LREM-LSET-LINDEX-LTRIM"><a href="#3-LREM-LSET-LINDEX-LTRIM" class="headerlink" title="3. LREM/LSET/LINDEX/LTRIM:"></a>3. LREM/LSET/LINDEX/LTRIM:</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">    #为后面的示例准备测试数据。</span><br><span class="line">    redis 127.0.0.1:6379&gt; lpush mykey a b c d a c</span><br><span class="line">    (integer) 6</span><br><span class="line">    #从头部(left)向尾部(right)变量链表，删除2个值等于a的元素，返回值为实际删除的数量。</span><br><span class="line">    redis 127.0.0.1:6379&gt; lrem mykey 2 a</span><br><span class="line">    (integer) 2</span><br><span class="line">    #看出删除后链表中的全部元素。</span><br><span class="line">    redis 127.0.0.1:6379&gt; lrange mykey 0 -1</span><br><span class="line">    1) &quot;c&quot;</span><br><span class="line">    2) &quot;d&quot;</span><br><span class="line">    3) &quot;c&quot;</span><br><span class="line">    4) &quot;b&quot;</span><br><span class="line">    #获取索引值为1(头部的第二个元素)的元素值。</span><br><span class="line">    redis 127.0.0.1:6379&gt; lindex mykey 1</span><br><span class="line">    &quot;d&quot;</span><br><span class="line">    #将索引值为1(头部的第二个元素)的元素值设置为新值e。</span><br><span class="line">    redis 127.0.0.1:6379&gt; lset mykey 1 e</span><br><span class="line">    OK</span><br><span class="line">    #查看是否设置成功。</span><br><span class="line">    redis 127.0.0.1:6379&gt; lindex mykey 1</span><br><span class="line">    &quot;e&quot;</span><br><span class="line">    #索引值6超过了链表中元素的数量，该命令返回nil。</span><br><span class="line">    redis 127.0.0.1:6379&gt; lindex mykey 6</span><br><span class="line">    (nil)</span><br><span class="line">    #设置的索引值6超过了链表中元素的数量，设置失败，该命令返回错误信息。</span><br><span class="line">    redis 127.0.0.1:6379&gt; lset mykey 6 hh</span><br><span class="line">    (error) ERR index out of range</span><br><span class="line">    #仅保留索引值0到2之间的3个元素，注意第0个和第2个元素均被保留。</span><br><span class="line">    redis 127.0.0.1:6379&gt; ltrim mykey 0 2</span><br><span class="line">    OK</span><br><span class="line">    #查看trim后的结果。</span><br><span class="line">    redis 127.0.0.1:6379&gt; lrange mykey 0 -1</span><br><span class="line">    1) &quot;c&quot;</span><br><span class="line">    2) &quot;e&quot;</span><br><span class="line">    3) &quot;c&quot;</span><br><span class="line">```    </span><br><span class="line"> </span><br><span class="line">##### 4. LINSERT:</span><br></pre></td></tr></table></figure>
+<pre><code> #删除该键便于后面的测试。
+redis 127.0.0.1:6379&gt; del mykey
+(integer) 1
+#为后面的示例准备测试数据。
+redis 127.0.0.1:6379&gt; lpush mykey a b c d e
+(integer) 5
+#在a的前面插入新元素a1。
+redis 127.0.0.1:6379&gt; linsert mykey before a a1
+(integer) 6
+#查看是否插入成功，从结果看已经插入。注意lindex的index值是0-based。
+redis 127.0.0.1:6379&gt; lindex mykey 0
+&quot;e&quot;
+#在e的后面插入新元素e2，从返回结果看已经插入成功。
+redis 127.0.0.1:6379&gt; linsert mykey after e e2
+(integer) 7
+#再次查看是否插入成功。
+redis 127.0.0.1:6379&gt; lindex mykey 1
+&quot;e2&quot;
+#在不存在的元素之前或之后插入新元素，该命令操作失败，并返回-1。
+redis 127.0.0.1:6379&gt; linsert mykey after k a
+(integer) -1
+#为不存在的Key插入新元素，该命令操作失败，返回0。
+redis 127.0.0.1:6379&gt; linsert mykey1 after a a2
+(integer) 0
+</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">##### 5. RPUSH/RPUSHX/RPOP/RPOPLPUSH:</span><br></pre></td></tr></table></figure>
+<pre><code>#删除该键，以便于后面的测试。
+redis 127.0.0.1:6379&gt; del mykey
+(integer) 1
+#从链表的尾部插入参数中给出的values，插入顺序是从左到右依次插入。
+redis 127.0.0.1:6379&gt; rpush mykey a b c d
+(integer) 4
+#通过lrange的可以获悉rpush在插入多值时的插入顺序。
+redis 127.0.0.1:6379&gt; lrange mykey 0 -1
+1) &quot;a&quot;
+2) &quot;b&quot;
+3) &quot;c&quot;
+4) &quot;d&quot;
+#该键已经存在并且包含4个元素，rpushx命令将执行成功，并将元素e插入到链表的尾部。
+redis 127.0.0.1:6379&gt; rpushx mykey e
+(integer) 5
+#通过lindex命令可以看出之前的rpushx命令确实执行成功，因为索引值为4的元素已经是新元素了。
+redis 127.0.0.1:6379&gt; lindex mykey 4
+&quot;e&quot;
+#由于mykey2键并不存在，因此该命令不会插入数据，其返回值为0。
+redis 127.0.0.1:6379&gt; rpushx mykey2 e
+(integer) 0
+#在执行rpoplpush命令前，先看一下mykey中链表的元素有哪些，注意他们的位置关系。
+redis 127.0.0.1:6379&gt; lrange mykey 0 -1
+1) &quot;a&quot;
+2) &quot;b&quot;
+3) &quot;c&quot;
+4) &quot;d&quot;
+5) &quot;e&quot;
+#将mykey的尾部元素e弹出，同时再插入到mykey2的头部(原子性的完成这两步操作)。
+redis 127.0.0.1:6379&gt; rpoplpush mykey mykey2
+&quot;e&quot;
+#通过lrange命令查看mykey在弹出尾部元素后的结果。
+redis 127.0.0.1:6379&gt; lrange mykey 0 -1
+1) &quot;a&quot;
+2) &quot;b&quot;
+3) &quot;c&quot;
+4) &quot;d&quot;
+#通过lrange命令查看mykey2在插入元素后的结果。
+redis 127.0.0.1:6379&gt; lrange mykey2 0 -1
+1) &quot;e&quot;
+#将source和destination设为同一键，将mykey中的尾部元素移到其头部。
+redis 127.0.0.1:6379&gt; rpoplpush mykey mykey
+&quot;d&quot;
+#查看移动结果。
+redis 127.0.0.1:6379&gt; lrange mykey 0 -1
+1) &quot;d&quot;
+2) &quot;a&quot;
+3) &quot;b&quot;
+4) &quot;c&quot;
+</code></pre><p>```</p>
+<h3 id="四、链表结构的小技巧："><a href="#四、链表结构的小技巧：" class="headerlink" title="四、链表结构的小技巧："></a>四、链表结构的小技巧：</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;针对链表结构的Value，Redis在其官方文档中给出了一些实用技巧，如RPOPLPUSH命令，下面给出具体的解释。<br>Redis链表经常会被用于消息队列的服务，以完成多程序之间的消息交换。假设一个应用程序正在执行LPUSH操作向链表中添加新的元素，我们通常将这样的程序称之为”生产者(Producer)”，而另外一个应用程序正在执行RPOP操作从链表中取出元素，我们称这样的程序为”消费者(Consumer)”。如果此时，消费者程序在取出消息元素后立刻崩溃，由于该消息已经被取出且没有被正常处理，那么我们就可以认为该消息已经丢失，由此可能会导致业务数据丢失，或业务状态的不一致等现象的发生。然而通过使用RPOPLPUSH命令，消费者程序在从主消息队列中取出消息之后再将其插入到备份队列中，直到消费者程序完成正常的处理逻辑后再将该消息从备份队列中删除。同时我们还可以提供一个守护进程，当发现备份队列中的消息过期时，可以重新将其再放回到主消息队列中，以便其它的消费者程序继续处理。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>一直在努力，谢谢您的打赏</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/weixin-pay.png" alt="认金 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/ali-pay.jpg" alt="认金 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/redis/" rel="tag"># redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/12/redis--String类型/" rel="next" title="redis数据类型-String">
+                <i class="fa fa-chevron-left"></i> redis数据类型-String
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/12/redis--Set类型/" rel="prev" title="redis数据类型-Set">
+                redis数据类型-Set <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="uyan_frame"></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">认金</p>
+              <p class="site-description motion-element" itemprop="description">谨慎和勤奋才能抓住机遇</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">38</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/yourname" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:yourname@gmail.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/yourname" target="_blank" title="Google">
+                    
+                      <i class="fa fa-fw fa-google"></i>Google</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/yourname" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.sivan0222.cn" title="吴晓文" target="_blank">吴晓文</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bestry.top" title="刘霈" target="_blank">刘霈</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.lanyuanxiaoyao.com" title="张家城" target="_blank">张家城</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、概述："><span class="nav-number">1.</span> <span class="nav-text">一、概述：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、相关命令（O表示时间复杂度）"><span class="nav-number">2.</span> <span class="nav-text">二、相关命令（O表示时间复杂度）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1、LPUSH-key-value-value-…-O-1"><span class="nav-number">2.0.1.</span> <span class="nav-text">1、LPUSH key value [value …]     O(1)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2、LPUSHX-key-value-O-1"><span class="nav-number">2.0.2.</span> <span class="nav-text">2、LPUSHX key value     O(1)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3、LRANGE-key-start-stop-O-S-N"><span class="nav-number">2.0.3.</span> <span class="nav-text">3、LRANGE key start stop     O(S+N)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4、LPOP-key-O-1"><span class="nav-number">2.0.4.</span> <span class="nav-text">4、LPOP key     O(1)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#5、LLEN-key-O-1"><span class="nav-number">2.0.5.</span> <span class="nav-text">5、LLEN key    O(1)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#6、LREM-key-count-value-O-N"><span class="nav-number">2.0.6.</span> <span class="nav-text">6、LREM key count value     O(N)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#7、LSET-key-index-value-O-N"><span class="nav-number">2.0.7.</span> <span class="nav-text">7、LSET key index value     O(N)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#8、LINDEX-key-index-O-N"><span class="nav-number">2.0.8.</span> <span class="nav-text">8、LINDEX key index     O(N)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#9、LTRIM-key-start-stop-O-N"><span class="nav-number">2.0.9.</span> <span class="nav-text">9、LTRIM key start stop     O(N)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#10、LINSERT-key-BEFORE-AFTER-pivot-value-O-N"><span class="nav-number">2.0.10.</span> <span class="nav-text">10、LINSERT key BEFORE|AFTER pivot value     O(N)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#11、RPUSH-key-value-value-…-O-1"><span class="nav-number">2.0.11.</span> <span class="nav-text">11、RPUSH key value [value …]     O(1)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#12、RPUSHX-key-value-O-1"><span class="nav-number">2.0.12.</span> <span class="nav-text">12、RPUSHX key value     O(1)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#13、RPOP-key-O-1"><span class="nav-number">2.0.13.</span> <span class="nav-text">13、RPOP key     O(1)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#14、RPOPLPUSH-source-destination-O-1"><span class="nav-number">2.0.14.</span> <span class="nav-text">14、RPOPLPUSH source destination     O(1)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、命令示例："><span class="nav-number">3.</span> <span class="nav-text">三、命令示例：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-LPUSH-LPUSHX-LRANGE"><span class="nav-number">3.0.1.</span> <span class="nav-text">1. LPUSH/LPUSHX/LRANGE:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-LPOP-LLEN"><span class="nav-number">3.0.2.</span> <span class="nav-text">2. LPOP/LLEN:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-LREM-LSET-LINDEX-LTRIM"><span class="nav-number">3.0.3.</span> <span class="nav-text">3. LREM/LSET/LINDEX/LTRIM:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、链表结构的小技巧："><span class="nav-number">4.</span> <span class="nav-text">四、链表结构的小技巧：</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+<div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">认金</span>
+  <br />
+  <span id="busuanzi_container_site_pv">
+    总访问量<span id="busuanzi_value_site_pv"></span>次
+	</span>
+	 <span class="post-meta-divider">|</span>
+	<span id="busuanzi_container_site_uv">
+  访客数<span id="busuanzi_value_site_uv"></span>人次
+</span>
+  
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+	
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/three/three.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/three/three-waves.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+    
+
+    
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2148448"></script>
+      <!-- UY END -->
+    
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+<script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("TILp6sh3sXv7ALPC69L1Ez0f-gzGzoHsz", "ffWk7tYInN3oC9752v1EFNqT");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

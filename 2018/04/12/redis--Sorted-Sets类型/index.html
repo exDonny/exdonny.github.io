@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="redis数据类型-Sorted-Sets" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="一、概述：&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Sorted-Sets和Sets类型极为相似，它们都是字符串的集合，都不允许重复的成员出现在一个Set中。它们之间的主要差别是Sorted-Sets中的每一个成员都会有一个分数(score)与之关联，Redis正是通过分数来为集合中的成员进行从小到大的排序。然而需要额外指出的是，尽管Sorted-Sets">
+<meta name="keywords" content="redis数据类型-Sorted-Sets">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis数据类型-Sorted-Sets">
+<meta property="og:url" content="http://www.rxdonny.com/2018/04/12/redis--Sorted-Sets类型/index.html">
+<meta property="og:site_name" content="TangRenxin&#39;s Blog">
+<meta property="og:description" content="一、概述：&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Sorted-Sets和Sets类型极为相似，它们都是字符串的集合，都不允许重复的成员出现在一个Set中。它们之间的主要差别是Sorted-Sets中的每一个成员都会有一个分数(score)与之关联，Redis正是通过分数来为集合中的成员进行从小到大的排序。然而需要额外指出的是，尽管Sorted-Sets">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-04-13T09:33:34.392Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="redis数据类型-Sorted-Sets">
+<meta name="twitter:description" content="一、概述：&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Sorted-Sets和Sets类型极为相似，它们都是字符串的集合，都不允许重复的成员出现在一个Set中。它们之间的主要差别是Sorted-Sets中的每一个成员都会有一个分数(score)与之关联，Redis正是通过分数来为集合中的成员进行从小到大的排序。然而需要额外指出的是，尽管Sorted-Sets">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.3',
+    sidebar: {"position":"right","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.rxdonny.com/2018/04/12/redis--Sorted-Sets类型/"/>
+
+
+
+
+
+  <title>redis数据类型-Sorted-Sets | TangRenxin's Blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?1ee1c0acf41d19ba0c99a6f5dab13e35";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">TangRenxin's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">命运永远掌握在自己的手中 | | 要相信你永远是最幸运的那一个</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            公益404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.rxdonny.com/2018/04/12/redis--Sorted-Sets类型/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="认金">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="TangRenxin's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">redis数据类型-Sorted-Sets</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-12T16:57:24+08:00">
+                2018-04-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/redis笔记/" itemprop="url" rel="index">
+                    <span itemprop="name">redis笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/04/12/redis--Sorted-Sets类型/" class="leancloud_visitors" data-flag-title="redis数据类型-Sorted-Sets">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="一、概述："><a href="#一、概述：" class="headerlink" title="一、概述："></a>一、概述：</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sorted-Sets和Sets类型极为相似，它们都是字符串的集合，都不允许重复的成员出现在一个Set中。它们之间的主要差别是Sorted-Sets中的每一个成员都会有一个分数(score)与之关联，Redis正是通过分数来为集合中的成员进行从小到大的排序。然而需要额外指出的是，尽管Sorted-Sets中的成员必须是唯一的，但是分数(score)却是可以重复的。<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在Sorted-Set中添加、删除或更新一个成员都是非常快速的操作，其时间复杂度为集合中成员数量的对数。由于Sorted-Sets中的成员在集合中的位置是有序的，因此，即便是访问位于集合中部的成员也仍然是非常高效的。事实上，Redis所具有的这一特征在很多其它类型的数据库中是很难实现的，换句话说，在该点上要想达到和Redis同样的高效，在其它数据库中进行建模是非常困难的。</p>
+<h3 id="二、相关命令（O表示时间复杂度）"><a href="#二、相关命令（O表示时间复杂度）" class="headerlink" title="二、相关命令（O表示时间复杂度）"></a>二、相关命令（O表示时间复杂度）</h3><h5 id="ZADD-key-score-member-score-member-O-log-N"><a href="#ZADD-key-score-member-score-member-O-log-N" class="headerlink" title="ZADD key score member [score] [member]     O(log(N))"></a>ZADD key score member [score] [member]     O(log(N))</h5><p>时间复杂度中的N表示Sorted-Sets中成员的数量。添加参数中指定的所有成员及其分数到指定key的Sorted-Set中，在该命令中我们可以指定多组score/member作为参数。如果在添加时参数中的某一成员已经存在，该命令将更新此成员的分数为新值，同时再将该成员基于新值重新排序。如果键不存在，该命令将为该键创建一个新的Sorted-Sets Value，并将score/member对插入其中。如果该键已经存在，但是与其关联的Value不是Sorted-Sets类型，相关的错误信息将被返回。    本次操作实际插入的成员数量。</p>
+<h5 id="ZCARD-key-O-1"><a href="#ZCARD-key-O-1" class="headerlink" title="ZCARD key     O(1)"></a>ZCARD key     O(1)</h5><p>获取与该Key相关联的Sorted-Sets中包含的成员数量。    返回Sorted-Sets中的成员数量，如果该Key不存在，返回0。</p>
+<h5 id="ZCOUNT-key-min-max-O-log-N-M"><a href="#ZCOUNT-key-min-max-O-log-N-M" class="headerlink" title="ZCOUNT key min max    O(log(N)+M)"></a>ZCOUNT key min max    O(log(N)+M)</h5><p>该命令用于获取分数(score)在min和max之间的成员数量。针对min和max参数需要额外说明的是，-inf和+inf分别表示Sorted-Sets中分数的最高值和最低值。缺省情况下，min和max表示的范围是闭区间范围，即min &lt;= score &lt;= max内的成员将被返回。然而我们可以通过在min和max的前面添加”(“字符来表示开区间，如(min max表示min &lt; score &lt;= max，而(min (max表示min &lt; score &lt; max。    分数指定范围内成员的数量。</p>
+<h5 id="ZINCRBY-key-increment-member-O-log-N"><a href="#ZINCRBY-key-increment-member-O-log-N" class="headerlink" title="ZINCRBY key increment member     O(log(N))"></a>ZINCRBY key increment member     O(log(N))</h5><p>该命令将为指定Key中的指定成员增加指定的分数。如果成员不存在，该命令将添加该成员并假设其初始分数为0，此后再将其分数加上increment。如果Key不存，该命令将创建该Key及其关联的Sorted-Sets，并包含参数指定的成员，其分数为increment参数。如果与该Key关联的不是Sorted-Sets类型，相关的错误信息将被返回。    以字符串形式表示的新分数。</p>
+<h5 id="ZRANGE-key-start-stop-WITHSCORES-O-log-N-M"><a href="#ZRANGE-key-start-stop-WITHSCORES-O-log-N-M" class="headerlink" title="ZRANGE key start stop [WITHSCORES]     O(log(N)+M)"></a>ZRANGE key start stop [WITHSCORES]     O(log(N)+M)</h5><p>时间复杂度中的N表示Sorted-Set中成员的数量，M则表示返回的成员数量。该命令返回顺序在参数start和stop指定范围内的成员，这里start和stop参数都是0-based，即0表示第一个成员，-1表示最后一个成员。如果start大于该Sorted-Set中的最大索引值，或start &gt; stop，此时一个空集合将被返回。如果stop大于最大索引值，该命令将返回从start到集合的最后一个成员。如果命令中带有可选参数WITHSCORES选项，该命令在返回的结果中将包含每个成员的分数值，如value1,score1,value2,score2…。　　    返回索引在start和stop之间的成员列表。</p>
+<h5 id="ZRANGEBYSCORE-key-min-max-WITHSCORES-LIMIT-offset-count-O-log-N-M"><a href="#ZRANGEBYSCORE-key-min-max-WITHSCORES-LIMIT-offset-count-O-log-N-M" class="headerlink" title="ZRANGEBYSCORE key min max [WITHSCORES] [LIMIT offset count]     O(log(N)+M)"></a>ZRANGEBYSCORE key min max [WITHSCORES] [LIMIT offset count]     O(log(N)+M)</h5><p>该命令将返回分数在min和max之间的所有成员，即满足表达式min &lt;= score &lt;= max的成员，其中返回的成员是按照其分数从低到高的顺序返回，如果成员具有相同的分数，则按成员的字典顺序返回。可选参数LIMIT用于限制返回成员的数量范围。可选参数offset表示从符合条件的第offset个成员开始返回，同时返回count个成员。可选参数WITHSCORES的含义参照ZRANGE中该选项的说明。最后需要说明的是参数中min和max的规则可参照命令ZCOUNT。    返回分数在指定范围内的成员列表。</p>
+<h5 id="ZRANK-key-member-O-log-N"><a href="#ZRANK-key-member-O-log-N" class="headerlink" title="ZRANK key member     O(log(N))"></a>ZRANK key member     O(log(N))</h5><p>时间复杂度中的N表示Sorted-Set中成员的数量。Sorted-Set中的成员都是按照分数从低到高的顺序存储，该命令将返回参数中指定成员的位置值，其中0表示第一个成员，它是Sorted-Set中分数最低的成员。    如果该成员存在，则返回它的位置索引值。否则返回nil。</p>
+<h5 id="ZREM-key-member-member-…-O-M-log-N"><a href="#ZREM-key-member-member-…-O-M-log-N" class="headerlink" title="ZREM key member [member …]    O(M log(N))"></a>ZREM key member [member …]    O(M log(N))</h5><p>时间复杂度中N表示Sorted-Set中成员的数量，M则表示被删除的成员数量。该命令将移除参数中指定的成员，其中不存在的成员将被忽略。如果与该Key关联的Value不是Sorted-Set，相应的错误信息将被返回。    实际被删除的成员数量。</p>
+<h5 id="ZREVRANGE-key-start-stop-WITHSCORES-O-log-N-M"><a href="#ZREVRANGE-key-start-stop-WITHSCORES-O-log-N-M" class="headerlink" title="ZREVRANGE key start stop [WITHSCORES]      O(log(N)+M)"></a>ZREVRANGE key start stop [WITHSCORES]      O(log(N)+M)</h5><p>时间复杂度中的N表示Sorted-Set中成员的数量，M则表示返回的成员数量。该命令的功能和ZRANGE基本相同，唯一的差别在于该命令是通过反向排序获取指定位置的成员，即从高到低的顺序。如果成员具有相同的分数，则按降序字典顺序排序。    返回指定的成员列表。</p>
+<h5 id="ZREVRANK-key-member-O-log-N"><a href="#ZREVRANK-key-member-O-log-N" class="headerlink" title="ZREVRANK key member     O(log(N))"></a>ZREVRANK key member     O(log(N))</h5><p>时间复杂度中的N表示Sorted-Set中成员的数量。该命令的功能和ZRANK基本相同，唯一的差别在于该命令获取的索引是从高到低排序后的位置，同样0表示第一个元素，即分数最高的成员。    如果该成员存在，则返回它的位置索引值。否则返回nil。 </p>
+<h5 id="ZSCORE-key-member-O-1"><a href="#ZSCORE-key-member-O-1" class="headerlink" title="ZSCORE key member    O(1)"></a>ZSCORE key member    O(1)</h5><p>获取指定Key的指定成员的分数。    如果该成员存在，以字符串的形式返回其分数，否则返回nil。</p>
+<h5 id="ZREVRANGEBYSCORE-key-max-min-WITHSCORES-LIMIT-offset-count-O-log-N-M"><a href="#ZREVRANGEBYSCORE-key-max-min-WITHSCORES-LIMIT-offset-count-O-log-N-M" class="headerlink" title="ZREVRANGEBYSCORE key max min [WITHSCORES] [LIMIT offset count]     O(log(N)+M)"></a>ZREVRANGEBYSCORE key max min [WITHSCORES] [LIMIT offset count]     O(log(N)+M)</h5><p>时间复杂度中的N表示Sorted-Set中成员的数量，M则表示返回的成员数量。该命令除了排序方式是基于从高到低的分数排序之外，其它功能和参数含义均与ZRANGEBYSCORE相同。    返回分数在指定范围内的成员列表。 </p>
+<h5 id="ZREMRANGEBYRANK-key-start-stop-O-log-N-M"><a href="#ZREMRANGEBYRANK-key-start-stop-O-log-N-M" class="headerlink" title="ZREMRANGEBYRANK key start stop     O(log(N)+M)"></a>ZREMRANGEBYRANK key start stop     O(log(N)+M)</h5><p>时间复杂度中的N表示Sorted-Set中成员的数量，M则表示被删除的成员数量。删除索引位置位于start和stop之间的成员，start和stop都是0-based，即0表示分数最低的成员，-1表示最后一个成员，即分数最高的成员。      被删除的成员数量。</p>
+<h5 id="ZREMRANGEBYSCORE-key-min-max-O-log-N-M"><a href="#ZREMRANGEBYSCORE-key-min-max-O-log-N-M" class="headerlink" title="ZREMRANGEBYSCORE key min max     O(log(N)+M)"></a>ZREMRANGEBYSCORE key min max     O(log(N)+M)</h5><p>时间复杂度中的N表示Sorted-Set中成员的数量，M则表示被删除的成员数量。删除分数在min和max之间的所有成员，即满足表达式min &lt;= score &lt;= max的所有成员。对于min和max参数，可以采用开区间的方式表示，具体规则参照ZCOUNT。     被删除的成员数量。</p>
+<h3 id="三、命令示例："><a href="#三、命令示例：" class="headerlink" title="三、命令示例："></a>三、命令示例：</h3><h5 id="1-ZADD-ZCARD-ZCOUNT-ZREM-ZINCRBY-ZSCORE-ZRANGE-ZRANK"><a href="#1-ZADD-ZCARD-ZCOUNT-ZREM-ZINCRBY-ZSCORE-ZRANGE-ZRANK" class="headerlink" title="1. ZADD/ZCARD/ZCOUNT/ZREM/ZINCRBY/ZSCORE/ZRANGE/ZRANK:"></a>1. ZADD/ZCARD/ZCOUNT/ZREM/ZINCRBY/ZSCORE/ZRANGE/ZRANK:</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">#在Shell的命令行下启动Redis客户端工具。</span><br><span class="line">  /&gt; redis-cli</span><br><span class="line">  #添加一个分数为1的成员。</span><br><span class="line">  redis 127.0.0.1:6379&gt; zadd myzset 1 &quot;one&quot;</span><br><span class="line">  (integer) 1</span><br><span class="line">  #添加两个分数分别是2和3的两个成员。</span><br><span class="line">  redis 127.0.0.1:6379&gt; zadd myzset 2 &quot;two&quot; 3 &quot;three&quot;</span><br><span class="line">  (integer) 2</span><br><span class="line">  #0表示第一个成员，-1表示最后一个成员。WITHSCORES选项表示返回的结果中包含每个成员及其分数，否则只返回成员。</span><br><span class="line">  redis 127.0.0.1:6379&gt; zrange myzset 0 -1 WITHSCORES</span><br><span class="line">  1) &quot;one&quot;</span><br><span class="line">  2) &quot;1&quot;</span><br><span class="line">  3) &quot;two&quot;</span><br><span class="line">  4) &quot;2&quot;</span><br><span class="line">  5) &quot;three&quot;</span><br><span class="line">  6) &quot;3&quot;</span><br><span class="line">  #获取成员one在Sorted-Set中的位置索引值。0表示第一个位置。</span><br><span class="line">  redis 127.0.0.1:6379&gt; zrank myzset one</span><br><span class="line">  (integer) 0</span><br><span class="line">  #成员four并不存在，因此返回nil。</span><br><span class="line">  redis 127.0.0.1:6379&gt; zrank myzset four</span><br><span class="line">  (nil)</span><br><span class="line">  #获取myzset键中成员的数量。    </span><br><span class="line">  redis 127.0.0.1:6379&gt; zcard myzset</span><br><span class="line">  (integer) 3</span><br><span class="line">  #返回与myzset关联的Sorted-Set中，分数满足表达式1 &lt;= score &lt;= 2的成员的数量。</span><br><span class="line">  redis 127.0.0.1:6379&gt; zcount myzset 1 2</span><br><span class="line">  (integer) 2</span><br><span class="line">  #删除成员one和two，返回实际删除成员的数量。</span><br><span class="line">  redis 127.0.0.1:6379&gt; zrem myzset one two</span><br><span class="line">  (integer) 2</span><br><span class="line">  #查看是否删除成功。</span><br><span class="line">  redis 127.0.0.1:6379&gt; zcard myzset</span><br><span class="line">  (integer) 1</span><br><span class="line">  #获取成员three的分数。返回值是字符串形式。</span><br><span class="line">  redis 127.0.0.1:6379&gt; zscore myzset three</span><br><span class="line">  &quot;3&quot;</span><br><span class="line">  #由于成员two已经被删除，所以该命令返回nil。</span><br><span class="line">  redis 127.0.0.1:6379&gt; zscore myzset two</span><br><span class="line">  (nil)</span><br><span class="line">  #将成员one的分数增加2，并返回该成员更新后的分数。</span><br><span class="line">  redis 127.0.0.1:6379&gt; zincrby myzset 2 one</span><br><span class="line">  &quot;3&quot;</span><br><span class="line">  #将成员one的分数增加-1，并返回该成员更新后的分数。</span><br><span class="line">  redis 127.0.0.1:6379&gt; zincrby myzset -1 one</span><br><span class="line">  &quot;2&quot;</span><br><span class="line">  #查看在更新了成员的分数后是否正确。</span><br><span class="line">  redis 127.0.0.1:6379&gt; zrange myzset 0 -1 WITHSCORES</span><br><span class="line">  1) &quot;one&quot;</span><br><span class="line">  2) &quot;2&quot;</span><br><span class="line">  3) &quot;two&quot;</span><br><span class="line">  4) &quot;2&quot;</span><br><span class="line">  5) &quot;three&quot;</span><br><span class="line">  6) &quot;3&quot;</span><br></pre></td></tr></table></figure>
+<h5 id="2-ZRANGEBYSCORE-ZREMRANGEBYRANK-ZREMRANGEBYSCORE"><a href="#2-ZRANGEBYSCORE-ZREMRANGEBYRANK-ZREMRANGEBYSCORE" class="headerlink" title="2. ZRANGEBYSCORE/ZREMRANGEBYRANK/ZREMRANGEBYSCORE"></a>2. ZRANGEBYSCORE/ZREMRANGEBYRANK/ZREMRANGEBYSCORE</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">redis 127.0.0.1:6379&gt; del myzset</span><br><span class="line">(integer) 1</span><br><span class="line">redis 127.0.0.1:6379&gt; zadd myzset 1 one 2 two 3 three 4 four</span><br><span class="line">(integer) 4</span><br><span class="line">#获取分数满足表达式1 &lt;= score &lt;= 2的成员。</span><br><span class="line">redis 127.0.0.1:6379&gt; zrangebyscore myzset 1 2</span><br><span class="line">1) &quot;one&quot;</span><br><span class="line">2) &quot;two&quot;</span><br><span class="line">#获取分数满足表达式1 &lt; score &lt;= 2的成员。</span><br><span class="line">redis 127.0.0.1:6379&gt; zrangebyscore myzset (1 2</span><br><span class="line">1) &quot;two&quot;</span><br><span class="line">#-inf表示第一个成员，+inf表示最后一个成员，limit后面的参数用于限制返回成员的自己，</span><br><span class="line">#2表示从位置索引(0-based)等于2的成员开始，去后面3个成员。</span><br><span class="line">redis 127.0.0.1:6379&gt; zrangebyscore myzset -inf +inf limit 2 3</span><br><span class="line">1) &quot;three&quot;</span><br><span class="line">2) &quot;four&quot;</span><br><span class="line">#删除分数满足表达式1 &lt;= score &lt;= 2的成员，并返回实际删除的数量。</span><br><span class="line">redis 127.0.0.1:6379&gt; zremrangebyscore myzset 1 2</span><br><span class="line">(integer) 2</span><br><span class="line">#看出一下上面的删除是否成功。</span><br><span class="line">redis 127.0.0.1:6379&gt; zrange myzset 0 -1</span><br><span class="line">1) &quot;three&quot;</span><br><span class="line">2) &quot;four&quot;</span><br><span class="line">#删除位置索引满足表达式0 &lt;= rank &lt;= 1的成员。</span><br><span class="line">redis 127.0.0.1:6379&gt; zremrangebyrank myzset 0 1</span><br><span class="line">(integer) 2</span><br><span class="line">#查看上一条命令是否删除成功。</span><br><span class="line">redis 127.0.0.1:6379&gt; zcard myzset</span><br><span class="line">(integer) 0</span><br></pre></td></tr></table></figure>
+<h5 id="3-ZREVRANGE-ZREVRANGEBYSCORE-ZREVRANK"><a href="#3-ZREVRANGE-ZREVRANGEBYSCORE-ZREVRANK" class="headerlink" title="3.ZREVRANGE/ZREVRANGEBYSCORE/ZREVRANK:"></a>3.ZREVRANGE/ZREVRANGEBYSCORE/ZREVRANK:</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">#为后面的示例准备测试数据。</span><br><span class="line">redis 127.0.0.1:6379&gt; del myzset</span><br><span class="line">(integer) 0</span><br><span class="line">redis 127.0.0.1:6379&gt; zadd myzset 1 one 2 two 3 three 4 four</span><br><span class="line">(integer) 4</span><br><span class="line">#以位置索引从高到低的方式获取并返回此区间内的成员。</span><br><span class="line">redis 127.0.0.1:6379&gt; zrevrange myzset 0 -1 WITHSCORES</span><br><span class="line">1) &quot;four&quot;</span><br><span class="line">2) &quot;4&quot;</span><br><span class="line">3) &quot;three&quot;</span><br><span class="line">4) &quot;3&quot;</span><br><span class="line">5) &quot;two&quot;</span><br><span class="line">6) &quot;2&quot;</span><br><span class="line">7) &quot;one&quot;</span><br><span class="line">8) &quot;1&quot;</span><br><span class="line">#由于是从高到低的排序，所以位置等于0的是four，1是three，并以此类推。</span><br><span class="line">redis 127.0.0.1:6379&gt; zrevrange myzset 1 3</span><br><span class="line">1) &quot;three&quot;</span><br><span class="line">2) &quot;two&quot;</span><br><span class="line">3) &quot;one&quot;</span><br><span class="line">#由于是从高到低的排序，所以one的位置是3。</span><br><span class="line">redis 127.0.0.1:6379&gt; zrevrank myzset one</span><br><span class="line">(integer) 3</span><br><span class="line">#由于是从高到低的排序，所以four的位置是0。</span><br><span class="line">redis 127.0.0.1:6379&gt; zrevrank myzset four</span><br><span class="line">(integer) 0</span><br><span class="line">#获取分数满足表达式3 &gt;= score &gt;= 0的成员，并以相反的顺序输出，即从高到底的顺序。</span><br><span class="line">redis 127.0.0.1:6379&gt; zrevrangebyscore myzset 3 0</span><br><span class="line">1) &quot;three&quot;</span><br><span class="line">2) &quot;two&quot;</span><br><span class="line">3) &quot;one&quot;</span><br><span class="line">#该命令支持limit选项，其含义等同于zrangebyscore中的该选项，只是在计算位置时按照相反的顺序计算和获取。</span><br><span class="line">redis 127.0.0.1:6379&gt; zrevrangebyscore myzset 4 0 limit 1 2</span><br><span class="line">1) &quot;three&quot;</span><br><span class="line">2) &quot;two&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="四、应用范围："><a href="#四、应用范围：" class="headerlink" title="四、应用范围："></a>四、应用范围：</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  1). 可以用于一个大型在线游戏的积分排行榜。每当玩家的分数发生变化时，可以执行ZADD命令更新玩家的分数，此后再通过ZRANGE命令获取积分TOPTEN的用户信息。当然我们也可以利用ZRANK命令通过username来获取玩家的排行信息。最后我们将组合使用ZRANGE和ZRANK命令快速的获取和某个玩家积分相近的其他用户的信息。<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2). Sorted-Sets类型还可用于构建索引数据。 </p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>一直在努力，谢谢您的打赏</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/weixin-pay.png" alt="认金 微信支付"/>
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/images/ali-pay.jpg" alt="认金 支付宝"/>
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/redis/" rel="tag"># redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/12/redis--Set类型/" rel="next" title="redis数据类型-Set">
+                <i class="fa fa-chevron-left"></i> redis数据类型-Set
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/12/redis--Key操作/" rel="prev" title="redis-Key操作">
+                redis-Key操作 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="uyan_frame"></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">认金</p>
+              <p class="site-description motion-element" itemprop="description">谨慎和勤奋才能抓住机遇</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">38</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/yourname" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:yourname@gmail.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://plus.google.com/yourname" target="_blank" title="Google">
+                    
+                      <i class="fa fa-fw fa-google"></i>Google</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://twitter.com/yourname" target="_blank" title="Twitter">
+                    
+                      <i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.sivan0222.cn" title="吴晓文" target="_blank">吴晓文</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bestry.top" title="刘霈" target="_blank">刘霈</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.lanyuanxiaoyao.com" title="张家城" target="_blank">张家城</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、概述："><span class="nav-number">1.</span> <span class="nav-text">一、概述：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、相关命令（O表示时间复杂度）"><span class="nav-number">2.</span> <span class="nav-text">二、相关命令（O表示时间复杂度）</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ZADD-key-score-member-score-member-O-log-N"><span class="nav-number">2.0.1.</span> <span class="nav-text">ZADD key score member [score] [member]     O(log(N))</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZCARD-key-O-1"><span class="nav-number">2.0.2.</span> <span class="nav-text">ZCARD key     O(1)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZCOUNT-key-min-max-O-log-N-M"><span class="nav-number">2.0.3.</span> <span class="nav-text">ZCOUNT key min max    O(log(N)+M)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZINCRBY-key-increment-member-O-log-N"><span class="nav-number">2.0.4.</span> <span class="nav-text">ZINCRBY key increment member     O(log(N))</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZRANGE-key-start-stop-WITHSCORES-O-log-N-M"><span class="nav-number">2.0.5.</span> <span class="nav-text">ZRANGE key start stop [WITHSCORES]     O(log(N)+M)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZRANGEBYSCORE-key-min-max-WITHSCORES-LIMIT-offset-count-O-log-N-M"><span class="nav-number">2.0.6.</span> <span class="nav-text">ZRANGEBYSCORE key min max [WITHSCORES] [LIMIT offset count]     O(log(N)+M)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZRANK-key-member-O-log-N"><span class="nav-number">2.0.7.</span> <span class="nav-text">ZRANK key member     O(log(N))</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZREM-key-member-member-…-O-M-log-N"><span class="nav-number">2.0.8.</span> <span class="nav-text">ZREM key member [member …]    O(M log(N))</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZREVRANGE-key-start-stop-WITHSCORES-O-log-N-M"><span class="nav-number">2.0.9.</span> <span class="nav-text">ZREVRANGE key start stop [WITHSCORES]      O(log(N)+M)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZREVRANK-key-member-O-log-N"><span class="nav-number">2.0.10.</span> <span class="nav-text">ZREVRANK key member     O(log(N))</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZSCORE-key-member-O-1"><span class="nav-number">2.0.11.</span> <span class="nav-text">ZSCORE key member    O(1)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZREVRANGEBYSCORE-key-max-min-WITHSCORES-LIMIT-offset-count-O-log-N-M"><span class="nav-number">2.0.12.</span> <span class="nav-text">ZREVRANGEBYSCORE key max min [WITHSCORES] [LIMIT offset count]     O(log(N)+M)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZREMRANGEBYRANK-key-start-stop-O-log-N-M"><span class="nav-number">2.0.13.</span> <span class="nav-text">ZREMRANGEBYRANK key start stop     O(log(N)+M)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZREMRANGEBYSCORE-key-min-max-O-log-N-M"><span class="nav-number">2.0.14.</span> <span class="nav-text">ZREMRANGEBYSCORE key min max     O(log(N)+M)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、命令示例："><span class="nav-number">3.</span> <span class="nav-text">三、命令示例：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-ZADD-ZCARD-ZCOUNT-ZREM-ZINCRBY-ZSCORE-ZRANGE-ZRANK"><span class="nav-number">3.0.1.</span> <span class="nav-text">1. ZADD/ZCARD/ZCOUNT/ZREM/ZINCRBY/ZSCORE/ZRANGE/ZRANK:</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-ZRANGEBYSCORE-ZREMRANGEBYRANK-ZREMRANGEBYSCORE"><span class="nav-number">3.0.2.</span> <span class="nav-text">2. ZRANGEBYSCORE/ZREMRANGEBYRANK/ZREMRANGEBYSCORE</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-ZREVRANGE-ZREVRANGEBYSCORE-ZREVRANK"><span class="nav-number">3.0.3.</span> <span class="nav-text">3.ZREVRANGE/ZREVRANGEBYSCORE/ZREVRANK:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、应用范围："><span class="nav-number">4.</span> <span class="nav-text">四、应用范围：</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+<div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">认金</span>
+  <br />
+  <span id="busuanzi_container_site_pv">
+    总访问量<span id="busuanzi_value_site_pv"></span>次
+	</span>
+	 <span class="post-meta-divider">|</span>
+	<span id="busuanzi_container_site_uv">
+  访客数<span id="busuanzi_value_site_uv"></span>人次
+</span>
+  
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+	
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/three/three.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/three/three-waves.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+    
+
+    
+      <!-- UY BEGIN -->
+      <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2148448"></script>
+      <!-- UY END -->
+    
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+<script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("TILp6sh3sXv7ALPC69L1Ez0f-gzGzoHsz", "ffWk7tYInN3oC9752v1EFNqT");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
