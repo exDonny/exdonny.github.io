@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://www.rxdonny.com/2018/06/30/JQuery%20Ajax%E7%9A%84%E6%A0%87%E5%87%86%E5%86%99%E6%B3%95/</loc>
+    
+    <lastmod>2018-06-30T05:36:41.282Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://www.rxdonny.com/2018/06/01/JDK%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/</loc>
     
     <lastmod>2018-06-01T11:21:38.619Z</lastmod>
@@ -247,14 +254,14 @@
   </url>
   
   <url>
-    <loc>http://www.rxdonny.com/2017/11/22/Spring-AOP/aa/</loc>
+    <loc>http://www.rxdonny.com/2017/11/22/Spring-AOP/</loc>
     
     <lastmod>2017-11-22T14:23:21.461Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://www.rxdonny.com/2017/11/22/Spring-AOP/</loc>
+    <loc>http://www.rxdonny.com/2017/11/22/Spring-AOP/aa/</loc>
     
     <lastmod>2017-11-22T14:23:21.461Z</lastmod>
     

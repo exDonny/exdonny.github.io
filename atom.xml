@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://www.rxdonny.com/"/>
-  <updated>2018-06-01T11:21:38.619Z</updated>
+  <updated>2018-06-30T05:36:41.282Z</updated>
   <id>http://www.rxdonny.com/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>JQuery Ajax的标准写法</title>
+    <link href="http://www.rxdonny.com/2018/06/30/JQuery%20Ajax%E7%9A%84%E6%A0%87%E5%87%86%E5%86%99%E6%B3%95/"/>
+    <id>http://www.rxdonny.com/2018/06/30/JQuery Ajax的标准写法/</id>
+    <published>2018-06-30T05:30:51.000Z</published>
+    <updated>2018-06-30T05:36:41.282Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="JQuery-Ajax的标准写法"><a href="#JQuery-Ajax的标准写法" class="headerlink" title="JQuery Ajax的标准写法"></a>JQuery Ajax的标准写法</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$.ajax(&#123;</span><br><span class="line">    url:<span class="string">"xxxx"</span>,            <span class="comment">//请求的url地址</span></span><br><span class="line">    dataType:<span class="string">"json"</span>,       <span class="comment">//返回的格式为json</span></span><br><span class="line">    async:<span class="keyword">true</span>,            <span class="comment">//请求是否异步，默认true异步</span></span><br><span class="line">    data:&#123;key1:value1,key2:value2&#125;,<span class="comment">//参数值</span></span><br><span class="line">    type:<span class="string">"GET"</span>,             <span class="comment">//请求的方式</span></span><br><span class="line">    beforeSend:function()&#123;&#125;,<span class="comment">//请求前的处理</span></span><br><span class="line">    success:function(req)&#123;&#125;,<span class="comment">//请求成功的处理</span></span><br><span class="line">    complete:function()&#123;&#125;,  <span class="comment">//请求完成的处理</span></span><br><span class="line">    error:function()&#123;&#125;      <span class="comment">//请求出错的处理</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;JQuery-Ajax的标准写法&quot;&gt;&lt;a href=&quot;#JQuery-Ajax的标准写法&quot; class=&quot;headerlink&quot; title=&quot;JQuery Ajax的标准写法&quot;&gt;&lt;/a&gt;JQuery Ajax的标准写法&lt;/h2&gt;&lt;figure class=&quot;hi
+      
+    
+    </summary>
+    
+      <category term="Ajax" scheme="http://www.rxdonny.com/categories/Ajax/"/>
+    
+    
+      <category term="Ajax" scheme="http://www.rxdonny.com/tags/Ajax/"/>
+    
+  </entry>
   
   <entry>
     <title>代理模式--JDK动态代理的原理及实现</title>
@@ -497,31 +522,6 @@
       <category term="Linux-LVS" scheme="http://www.rxdonny.com/tags/Linux-LVS/"/>
     
       <category term="VS/NAT" scheme="http://www.rxdonny.com/tags/VS-NAT/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Linux之LVS负载均衡</title>
-    <link href="http://www.rxdonny.com/2018/01/03/LVS%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/"/>
-    <id>http://www.rxdonny.com/2018/01/03/LVS负载均衡/</id>
-    <published>2018-01-03T11:02:23.000Z</published>
-    <updated>2018-01-03T14:20:24.288Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="LVS-Linux-Virtual-Server-到底是什么"><a href="#LVS-Linux-Virtual-Server-到底是什么" class="headerlink" title="LVS (Linux Virtual Server)到底是什么?"></a>LVS (Linux Virtual Server)到底是什么?</h1><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;它是一种集群(Cluster)技术，采用IP负载均衡技术和基于内容请求分发技术。调度器具有很好的吞吐率，将请求均衡地转移到不同的服务器上执行，且调度器自动屏蔽掉服务器的故障，从而将一组服务器构成一个高性能的、高可用的虚拟服务器。整个服务器集群的结构对客户是透明的，而且无需修改客户端和服务器端的程序。</p><h1 id="LVS组成部分"><a href="#LVS组成部分" class="headerlink" title="LVS组成部分"></a>LVS组成部分</h1><ul><li><strong>负载调度器</strong>（load balancer/ Director），它是整个集群对外面的前端机，负责将客户的请求发送到一组服务器上执行，而客户认为服务是来自一个IP地址（我们可称之为虚拟IP地址）上的。</li><li><strong>服务器池</strong>（server pool/Realserver），是一组真正执行客户请求的服务器，执行的服务一般有WEB、MAIL、FTP和DNS等。</li><li><strong>共享存储</strong>（sharedstorage），它为服务器池提供一个共享的存储区，这样很容易使得服务器池拥有相同的内容，提供相同的服务。</li></ul><h1 id="三种IP负载技术"><a href="#三种IP负载技术" class="headerlink" title="三种IP负载技术"></a>三种IP负载技术</h1><h3 id="1-VS-NAT"><a href="#1-VS-NAT" class="headerlink" title="1. VS/NAT"></a>1. VS/NAT</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VS/NAT(Virtual Server via Network Address Translation)是一种最简单的方式，所有的RealServer只需要将自己的网关指向Director即可。客户端可以是任意操作系统，但此方式下，一个Director能够带动的RealServer比较有限。在VS/NAT的方式下，Director也可以兼为一台RealServer。通过网络地址转换，调度器重写请求报文的目标地址，根据预设的调度算法，将请求分派给后端的真实服务器；真实服务器的响应报文通过调度器时，报文的源地址被重写，再返回给客户，完成整个负载调度过程。</p><p><img src="1.png" alt="vs/nat"></p><h3 id="2-VS-TUN"><a href="#2-VS-TUN" class="headerlink" title="2. VS/TUN"></a>2. VS/TUN</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;采用NAT技术时，由于请求和响应报文都必须经过调度器地址重写，当客户请求越来越多时，调度器的处理能力将成为瓶颈。为了解决这个问题，调度器把请求报 文通过IP隧道转发至真实服务器，而真实服务器将响应直接返回给客户，所以调度器只处理请求报文。由于一般网络服务应答比请求报文大许多，采用 VS/TUN技术后，集群系统的最大吞吐量可以提高10倍。VS/TUN(Virtual Server via IP Tunneling)隧道（IPtunneling）是将一个IP报文封装在另一个IP报文的技术，这可以使得目标为一个IP地址的数据报文能被封装和转发到另一个IP地址。IP隧道技术亦称为IP封装技术（IP encapsulation）。IP隧道主要用于移动主机和虚拟私有网络（Virtual Private Network），在其中隧道都是静态建立的，隧道一端有一个IP地址，另一端也有唯一的IP地址。它的连接调度和管理与VS/NAT中的一样，只是它的报文转发方法不同。调度器根据各个服务器的负载情况，动态地选择一台服务器，将请求报文封装在另一个IP报文中，再将封装后的IP报文转发给选出的服务器；服务器收到报文后，先将报文解封获得原来目标地址为VIP 的报文，服务器发现VIP地址被配置在本地的IP隧道设备上，所以就处理这个请求，然后根据路由表将响应报文直接返回给客户。</p><p><img src="2.png" alt="vs/tun"></p><h3 id="3-VS-DR"><a href="#3-VS-DR" class="headerlink" title="3. VS/DR"></a>3. VS/DR</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VS/DR(Virtual Server via Direct Routing)通过改写请求报文的MAC地址，将请求发送到真实服务器，而真实服务器将响应直接返回给客户。同VS/TUN技术一样，VS/DR技术可极大地 提高集群系统的伸缩性。这种方法没有IP隧道的开销，对集群中的真实服务器也没有必须支持IP隧道协议的要求，但是要求调度器与真实服务器都有一块网卡连 在同一物理网段上。</p><p><img src="3.png" alt="vs/dr"></p><h3 id="三种方法的优缺点比较"><a href="#三种方法的优缺点比较" class="headerlink" title="三种方法的优缺点比较"></a>三种方法的优缺点比较</h3><p><img src="4.png" alt="bijiao"></p><p><strong>具体配置，请看下一篇！</strong></p>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;h1 id=&quot;LVS-Linux-Virtual-Server-到底是什么&quot;&gt;&lt;a href=&quot;#LVS-Linux-Virtual-Server-到底是什么&quot; class=&quot;headerlink&quot; title=&quot;LVS (Linux Virtual Server)到底是什么?
-      
-    
-    </summary>
-    
-      <category term="Linux-LVS" scheme="http://www.rxdonny.com/categories/Linux-LVS/"/>
-    
-    
-      <category term="Linux-LVS" scheme="http://www.rxdonny.com/tags/Linux-LVS/"/>
     
   </entry>
   
